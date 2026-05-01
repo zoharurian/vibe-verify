@@ -1,0 +1,14 @@
+{
+  "name": "vibe-verify",
+  "version": "3.0.0",
+  "description": "Multi-agent business idea analyzer — outputs a styled PPTX report",
+  "main": "run.js",
+  "scripts": {
+    "start": "node run.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.30.0",
+    "pptxgenjs": "^3.12.0"
+  },
+  "engines": { "node": ">=18.0.0" }
+}
