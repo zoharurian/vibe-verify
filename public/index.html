@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vibe & Verify — תחושה ואימות</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="promo-bar">
+    <span>◆ VIBE & VERIFY</span>
+    <span class="promo-mid">MULTI-AGENT INTELLIGENCE</span>
+  </div>
+
+  <div id="app">
+    <!-- Input View -->
+    <section id="input-view" class="view active">
+      <div class="hero">
+        <h1 class="hero-line-1">THE</h1>
+        <h1 class="hero-line-2">VERDICT.</h1>
+        <p class="hero-sub">מכונת ניתוח רעיונות עסקיים עם 5 סוכנים</p>
+      </div>
+      <div class="input-area">
+        <label for="idea-input">הרעיון העסקי שלך</label>
+        <textarea id="idea-input" placeholder="תאר את הרעיון העסקי שלך..." rows="4"></textarea>
+        <button id="run-btn">הרץ ניתוח ▶</button>
+      </div>
+      <div class="agents-preview">
+        <div class="agent-chip" style="--c:#3A2418"><span>♟</span> רוני · אסטרטגיה</div>
+        <div class="agent-chip" style="--c:#9B1C5E"><span>✦</span> דנה · חוויה</div>
+        <div class="agent-chip" style="--c:#C9521D"><span>◈</span> מיכל · נתונים</div>
+        <div class="agent-chip" style="--c:#F4A261"><span>◎</span> יואב · לקוח</div>
+        <div class="agent-chip" style="--c:#7B2D26"><span>⬡</span> תמר · ביצוע</div>
+      </div>
+    </section>
+
+    <!-- Progress View -->
+    <section id="progress-view" class="view">
+      <div class="phase-indicator" id="phase-indicator"></div>
+      <div class="agents-grid" id="agents-grid"></div>
+    </section>
+
+    <!-- Results View -->
+    <section id="results-view" class="view">
+      <div id="verdict-section"></div>
+      <a id="download-btn" class="download-btn" href="#">הורד מצגת ↓</a>
+      <div id="agent-results"></div>
+      <button id="new-analysis-btn" class="new-btn">ניתוח חדש</button>
+    </section>
+
+    <!-- Error -->
+    <div id="error-banner" class="error-banner hidden"></div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+services:
+  web:
+    image: node:22-slim
+    working_dir: /app
+    volumes:
+      - .:/app
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./.env.base44-defaults
+      - /run/base44/app.env
+    environment:
+      - NODE_ENV=development
+    command: ["sh", "-ec", "npm install --no-audit --no-fund && exec node server.js"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/', r => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    restart: on-failure
