@@ -146,7 +146,7 @@ function promoBar(s, pres, num) {
     fontSize: 8, bold: true, color: T.ORANGE_LT, fontFace: T.FONT,
     charSpacing: 4, align: "center", valign: "middle",
   });
-  s.addText(num ? `SLIDE ${num} / 48` : "", {
+  s.addText(num ? `SLIDE ${num} / 50` : "", {
     x: W - PAD - 2, y: 0, w: 2, h: 0.22,
     fontSize: 8, bold: true, color: T.CREAM, fontFace: T.FONT,
     charSpacing: 3, align: "right", valign: "middle",
@@ -220,7 +220,8 @@ async function buildPresentation(report) {
   slide_TrendsWarnings(pres, report, ++n);                    // 07
   slide_WhyNow(pres, report, ++n);                            // 08
   slide_Sources(pres, report, ++n);                           // 09
-  slide_Team(pres, report, ++n);                              // 10
+  slide_ResearchHighlights(pres, report, ++n);                // 10
+  slide_Team(pres, report, ++n);                              // 11
 
   // 5 agents x 5 slides each (cover + content A/B/C/D)
   report.agents.forEach((agent) => {
@@ -246,7 +247,8 @@ async function buildPresentation(report) {
   slide_TheLock(pres, report, ++n);                           // 35
   slide_OpenQuestions(pres, report, ++n);                     // 36
   slide_NextMoves(pres, report, ++n);                         // 37
-  slide_Endcap(pres, report, ++n);                            // 38
+  slide_ExecSummary(pres, report, ++n);                       // 38
+  slide_Endcap(pres, report, ++n);                            // 39
 
   // Versioned output: never overwrite previous deck
   const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, "-");
@@ -801,7 +803,81 @@ function slide_Sources(pres, report, num) {
 }
 
 // ════════════════════════════════════════════════════════════
-// 10. TEAM
+// 10. RESEARCH HIGHLIGHTS — key numbers in a visual grid
+// ════════════════════════════════════════════════════════════
+function slide_ResearchHighlights(pres, report, num) {
+  const s = pres.addSlide();
+  s.background = { color: T.CREAM };
+  headerEyebrow(s, pres, String(num).padStart(2,"0"), "RESEARCH HIGHLIGHTS");
+
+  s.addText("תגליות מפתח מהמחקר", {
+    x: PAD, y: 0.95, w: W - 2*PAD, h: 0.55,
+    fontSize: 28, bold: true, color: T.BROWN, fontFace: T.FONT,
+    align: "right", rtlMode: true, lang: "he-IL", autoFit: true,
+  });
+
+  const raw = sectionFrom(report.research, "Numbers");
+  const items = clean(raw).split("\n").map(s => s.trim()).filter(Boolean).slice(0, 6);
+  if (!items.length) {
+    s.addText("(אין נתונים)", {
+      x: PAD, y: 2.5, w: W - 2*PAD, h: 0.4,
+      fontSize: 14, color: T.BROWN_MID, fontFace: T.FONT,
+      align: "right", rtlMode: true, lang: "he-IL", autoFit: true,
+    });
+    footerLine(s, pres, "THE NUMBERS THAT SHOULD DRIVE EVERY DECISION");
+    return;
+  }
+
+  // 2x3 grid of stat cards
+  const Y = 1.65;
+  const totalH = 3.45;
+  const gap = 0.15;
+  const rows = Math.ceil(items.length / 3);
+  const rowH = (totalH - gap * (rows - 1)) / rows;
+  const colW = (W - 2*PAD - gap * 2) / 3;
+  const colors = [T.FUCHSIA, T.ORANGE_DK, T.BURGUNDY, T.BROWN, T.ORANGE_LT, T.BROWN_MID];
+
+  items.forEach((line, i) => {
+    const col = i % 3;
+    const row = Math.floor(i / 3);
+    const x = PAD + col * (colW + gap);
+    const y = Y + row * (rowH + gap);
+
+    s.addShape(pres.shapes.RECTANGLE, {
+      x, y, w: colW, h: rowH,
+      fill: { color: T.WHITE }, line: { color: T.HAIRLINE, width: 0.5 },
+    });
+    s.addShape(pres.shapes.RECTANGLE, {
+      x, y, w: colW, h: 0.06,
+      fill: { color: colors[i] }, line: { color: colors[i], width: 0 },
+    });
+
+    // Extract the number from the line (first number-like token)
+    const cleaned = line.replace(/^\d+\.?\s*/, "");
+    const numMatch = cleaned.match(/[\d,.]+/);
+    const bigNum = numMatch ? numMatch[0] : "";
+    const rest = cleaned.replace(bigNum, "").trim();
+
+    if (bigNum) {
+      s.addText(bigNum, {
+        x: x + 0.15, y: y + 0.15, w: colW - 0.3, h: 0.7,
+        fontSize: 36, bold: true, color: colors[i], fontFace: T.FONT,
+        align: "right", rtlMode: true, lang: "he-IL", autoFit: true, valign: "top",
+      });
+    }
+    s.addText(safe(rest, 180), {
+      x: x + 0.15, y: y + 0.85, w: colW - 0.3, h: rowH - 1.0,
+      fontSize: 10, color: T.BROWN, fontFace: T.FONT,
+      align: "right", rtlMode: true, lang: "he-IL", autoFit: true, valign: "top",
+      lineSpacingMultiple: 1.35,
+    });
+  });
+
+  footerLine(s, pres, "THE NUMBERS THAT SHOULD DRIVE EVERY DECISION");
+}
+
+// ════════════════════════════════════════════════════════════
+// 11. TEAM
 // ════════════════════════════════════════════════════════════
 function slide_Team(pres, report, num) {
   const s = pres.addSlide();
@@ -1600,7 +1676,74 @@ function slide_NextMoves(pres, report, num) {
 }
 
 // ════════════════════════════════════════════════════════════
-// 38. ENDCAP
+// 38. EXECUTIVE SUMMARY — one-page TL;DR before endcap
+// ════════════════════════════════════════════════════════════
+function slide_ExecSummary(pres, report, num) {
+  const s = pres.addSlide();
+  s.background = { color: T.CREAM };
+  headerEyebrow(s, pres, String(num).padStart(2,"0"), "EXECUTIVE SUMMARY");
+
+  s.addText("סיכום מנהלים", {
+    x: PAD, y: 0.95, w: W - 2*PAD, h: 0.55,
+    fontSize: 32, bold: true, color: T.BROWN, fontFace: T.FONT,
+    align: "right", rtlMode: true, lang: "he-IL", autoFit: true,
+  });
+
+  const v = parseKV(report.synth.verdict || "");
+  const what    = v.find(r => r.key.includes("מה זה")) || {};
+  const move    = v.find(r => r.key.includes("הצעד") || r.key.includes("שמשנה")) || {};
+  const test    = v.find(r => r.key.includes("מבחן") || r.key.includes("90")) || {};
+  const lock    = v.find(r => r.key.includes("המנעול")) || {};
+
+  const risks = clean(report.synth.risks || "").split("\n").map(s => s.trim()).filter(Boolean);
+  const highRisk = risks.find(r => r.includes("סיכון גבוה")) || "";
+
+  // 4 quadrants
+  const Y = 1.65;
+  const totalH = 3.45;
+  const gap = 0.15;
+  const rowH = (totalH - gap) / 2;
+  const colW = (W - 2*PAD - gap) / 2;
+
+  const quads = [
+    { label: "מה זה באמת", val: what.val, color: T.BROWN },
+    { label: "הצעד שמשנה הכיוון", val: move.val, color: T.FUCHSIA },
+    { label: "מבחן 90 הימים", val: test.val, color: T.ORANGE_DK },
+    { label: "הסיכון הגבוה", val: highRisk.replace(/^סיכון.*?:\s*/, ""), color: T.BURGUNDY },
+  ];
+
+  quads.forEach((q, i) => {
+    const col = i % 2;
+    const row = Math.floor(i / 2);
+    const x = PAD + col * (colW + gap);
+    const y = Y + row * (rowH + gap);
+
+    s.addShape(pres.shapes.RECTANGLE, {
+      x, y, w: colW, h: rowH,
+      fill: { color: T.WHITE }, line: { color: T.HAIRLINE, width: 0.5 },
+    });
+    s.addShape(pres.shapes.RECTANGLE, {
+      x, y, w: 0.06, h: rowH,
+      fill: { color: q.color }, line: { color: q.color, width: 0 },
+    });
+    s.addText(q.label, {
+      x: x + 0.2, y: y + 0.1, w: colW - 0.35, h: 0.3,
+      fontSize: 11, bold: true, color: q.color, fontFace: T.FONT,
+      align: "right", rtlMode: true, lang: "he-IL", autoFit: true, charSpacing: 2,
+    });
+    s.addText(safe(q.val || "(לא נמצא)", 300), {
+      x: x + 0.2, y: y + 0.42, w: colW - 0.35, h: rowH - 0.52,
+      fontSize: 12, color: T.BROWN, fontFace: T.FONT,
+      align: "right", rtlMode: true, lang: "he-IL", autoFit: true, valign: "top",
+      lineSpacingMultiple: 1.4,
+    });
+  });
+
+  footerLine(s, pres, "ONE PAGE. EVERY DECISION YOU NEED.");
+}
+
+// ════════════════════════════════════════════════════════════
+// 39. ENDCAP
 // ════════════════════════════════════════════════════════════
 function slide_Endcap(pres, report, num) {
   const s = pres.addSlide();

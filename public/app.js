@@ -7,6 +7,7 @@ const downloadBtn   = document.getElementById("download-btn");
 const agentResults  = document.getElementById("agent-results");
 const errorBanner   = document.getElementById("error-banner");
 const newAnalysisBtn = document.getElementById("new-analysis-btn");
+const generateBtn   = document.getElementById("generate-pptx-btn");
 
 const AGENTS_INFO = [
   { id: "roni",   name: "רוני",  emoji: "♟", role: "אסטרטגיה", color: "#3A2418", badge: "STRATEGY" },
@@ -38,8 +39,10 @@ function showResults(report, pptx) {
   if (pptx) {
     downloadBtn.href = `/api/download/${pptx}`;
     downloadBtn.style.display = "";
+    generateBtn.style.display = "none";
   } else {
     downloadBtn.style.display = "none";
+    generateBtn.style.display = "";
   }
 
   // Agent results
@@ -91,4 +94,25 @@ newAnalysisBtn.addEventListener("click", () => {
 
 ideaInput.addEventListener("keydown", (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key === "Enter") runBtn.click();
+});
+
+// Generate PPTX
+generateBtn.addEventListener("click", async () => {
+  generateBtn.textContent = "מייצר מצגת...";
+  generateBtn.disabled = true;
+  try {
+    const res = await fetch("/api/generate-pptx", { method: "POST" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || "נכשלה יצירת המצגת");
+    }
+    const data = await res.json();
+    downloadBtn.href = `/api/download/${data.filename}`;
+    downloadBtn.style.display = "";
+    generateBtn.style.display = "none";
+  } catch (err) {
+    showError(`שגיאת יצירת מצגת: ${err.message}`);
+    generateBtn.textContent = "צור מצגת 50 עמודים ↓";
+    generateBtn.disabled = false;
+  }
 });

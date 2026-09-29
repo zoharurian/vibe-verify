@@ -24,6 +24,29 @@ const server = http.createServer(async (req, res) => {
   const cleanUrl = req.url.split("?")[0];
   console.log(`${new Date().toISOString()} ${req.method} ${req.url} Host=${req.headers.host || "none"}`);
 
+  // POST /api/generate-pptx — generate PPTX from report.json
+  if (req.method === "POST" && cleanUrl === "/api/generate-pptx") {
+    try {
+      const reportPath = path.join(__dirname, "report.json");
+      if (!fs.existsSync(reportPath)) {
+        res.writeHead(404, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "No report found" }));
+        return;
+      }
+      const report = JSON.parse(fs.readFileSync(reportPath, "utf8"));
+      const { buildPresentation } = require("./build-presentation");
+      const outPath = await buildPresentation(report);
+      const filename = path.basename(outPath);
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ filename }));
+    } catch (err) {
+      console.error("PPTX generation error:", err);
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+    return;
+  }
+
   // GET /api/report — return cached report.json + latest PPTX filename
   if (req.method === "GET" && cleanUrl === "/api/report") {
     const reportPath = path.join(__dirname, "report.json");
