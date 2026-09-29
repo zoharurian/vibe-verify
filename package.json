@@ -4,11 +4,15 @@
   "description": "Multi-agent business idea analyzer — outputs a styled PPTX report",
   "main": "run.js",
   "scripts": {
-    "start": "node run.js"
+    "start": "node run.js",
+    "dev": "vite"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.30.0",
     "pptxgenjs": "^3.12.0"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
   },
   "engines": { "node": ">=18.0.0" }
 }
