@@ -1,0 +1,13 @@
+{
+  "previewPort": 3000,
+  "healthPath": "/",
+  "startCommand": "docker compose -f docker-compose.base44.yml up -d",
+  "secrets": [
+    {
+      "name": "ANTHROPIC_API_KEY",
+      "description": "Anthropic API key for Claude (used by @anthropic-ai/sdk). Get it from https://console.anthropic.com/settings/keys",
+      "requiredAtBoot": true,
+      "generatedForDevelopment": true
+    }
+  ]
+}
