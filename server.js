@@ -158,7 +158,9 @@ async function runAnalysis(idea, res) {
 
 // ── Static file serving ───────────────────────────────────────
 function serveStatic(req, res) {
-  let url = req.url === "/" ? "/index.html" : req.url;
+  // Strip query string for file path resolution
+  const cleanUrl = req.url.split("?")[0];
+  let url = cleanUrl === "/" ? "/index.html" : cleanUrl;
   let filePath;
   if (url.startsWith("/assets/")) {
     filePath = path.join(__dirname, url);
@@ -173,13 +175,23 @@ function serveStatic(req, res) {
   }
 
   const ext = path.extname(filePath);
+  const contentType = MIME[ext] || "application/octet-stream";
+
+  if (req.method === "HEAD") {
+    res.writeHead(200, { "Content-Type": contentType });
+    res.end();
+    return;
+  }
+
   const data = fs.readFileSync(filePath);
-  res.writeHead(200, { "Content-Type": MIME[ext] || "application/octet-stream" });
+  res.writeHead(200, { "Content-Type": contentType });
   res.end(data);
 }
 
 // ── HTTP server ────────────────────────────────────────────────
 const server = http.createServer(async (req, res) => {
+  console.log(`${new Date().toISOString()} ${req.method} ${req.url} Host=${req.headers.host || "none"}`);
+
   // POST /api/analyze — SSE stream of analysis progress
   if (req.method === "POST" && req.url === "/api/analyze") {
     let body = "";
